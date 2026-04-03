@@ -5,7 +5,7 @@ import { useTasks, useCreateTask, useUpdateTask } from "@/lib/hooks/useTasks";
 import { useGoals } from "@/lib/hooks/useGoals";
 import { useTaskPanel } from "@/lib/store";
 import { StatusBadge, PriorityBadge } from "@/components/tasks/TaskBadges";
-import { Plus, X, MoreHorizontal } from "lucide-react";
+import { Plus, X, MoreHorizontal, CalendarPlus } from "lucide-react";
 
 interface Member {
   id: string;
@@ -28,6 +28,9 @@ interface TaskRow {
   priority: string;
   assignee?: { id: string; name: string | null } | null;
   dueDate?: string | null;
+  scheduledStart?: string | null;
+  scheduledEnd?: string | null;
+  recurrence?: string | null;
 }
 
 const STATUS_OPTIONS = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"];
@@ -109,6 +112,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
               <th className="text-left px-4 py-2.5 w-28">Priority</th>
               <th className="text-left px-4 py-2.5 w-32">Assignee</th>
               <th className="text-left px-4 py-2.5 w-28">Due date</th>
+              <th className="text-left px-4 py-2.5 w-44">Schedule</th>
               <th className="w-10" />
             </tr>
           </thead>
@@ -116,7 +120,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
             {isLoading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="border-b border-gray-50">
-                  {[...Array(7)].map((_, j) => (
+                  {[...Array(8)].map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="h-3 bg-gray-100 animate-pulse rounded" />
                     </td>
@@ -125,7 +129,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
               ))
             ) : tasks.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
                   No tasks found. Create your first task above.
                 </td>
               </tr>
@@ -174,6 +178,16 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
                     <InlineDate
                       value={task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-CA", { timeZone: "UTC" }) : ""}
                       onSave={(v) => save(task.id, { dueDate: v ? new Date(v + "T12:00:00").toISOString() : null })}
+                    />
+                  </td>
+
+                  <td className="px-4 py-2">
+                    <InlineSchedule
+                      scheduledStart={task.scheduledStart ?? null}
+                      scheduledEnd={task.scheduledEnd ?? null}
+                      recurrence={task.recurrence ?? "NONE"}
+                      title={task.title}
+                      onSave={(data) => save(task.id, data)}
                     />
                   </td>
 
@@ -345,6 +359,103 @@ function InlineAssignee({ assignee, members, onChange }: {
       className="block cursor-pointer text-xs text-gray-500 rounded px-2 py-0.5 hover:bg-blue-50 transition"
     >
       {assignee?.name ?? <span className="text-gray-300">—</span>}
+    </span>
+  );
+}
+
+const RECURRENCE_LABELS: Record<string, string> = {
+  NONE: "No repeat", DAILY: "Daily", WEEKLY: "Weekly", MONTHLY: "Monthly",
+};
+
+function toDateTimeLocal(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function buildGCalUrl(title: string, start: string, end: string, recurrence: string) {
+  const fmt = (s: string) => new Date(s).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const params = new URLSearchParams({ action: "TEMPLATE", text: title, dates: `${fmt(start)}/${fmt(end)}` });
+  if (recurrence !== "NONE") params.append("recur", `RRULE:FREQ=${recurrence}`);
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function InlineSchedule({ scheduledStart, scheduledEnd, recurrence, title, onSave }: {
+  scheduledStart: string | null;
+  scheduledEnd: string | null;
+  recurrence: string;
+  title: string;
+  onSave: (data: Record<string, unknown>) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [repeat, setRepeat] = useState("NONE");
+
+  function openEditor() {
+    setStart(scheduledStart ? toDateTimeLocal(scheduledStart) : "");
+    setEnd(scheduledEnd ? toDateTimeLocal(scheduledEnd) : "");
+    setRepeat(recurrence ?? "NONE");
+    setEditing(true);
+  }
+
+  function commit() {
+    setEditing(false);
+    onSave({
+      scheduledStart: start ? new Date(start).toISOString() : null,
+      scheduledEnd: end ? new Date(end).toISOString() : null,
+      recurrence: repeat,
+    });
+  }
+
+  if (editing) {
+    return (
+      <div className="space-y-1.5 py-1">
+        <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)}
+          className="w-full border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)}
+          className="w-full border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        <select value={repeat} onChange={(e) => setRepeat(e.target.value)}
+          className="w-full border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          {Object.entries(RECURRENCE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+        <div className="flex items-center gap-1.5">
+          <button onClick={commit}
+            className="text-xs bg-blue-600 text-white px-2.5 py-0.5 rounded hover:bg-blue-700 transition">
+            Save
+          </button>
+          <button onClick={() => setEditing(false)}
+            className="text-xs text-gray-400 hover:text-gray-600 px-1">
+            Cancel
+          </button>
+          {start && end && (
+            <a href={buildGCalUrl(title, start, end, repeat)} target="_blank" rel="noopener noreferrer"
+              className="ml-auto text-blue-500 hover:text-blue-700" title="Add to Google Calendar">
+              <CalendarPlus className="w-3.5 h-3.5" />
+            </a>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (scheduledStart) {
+    const fmt = (s: string) => new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    return (
+      <div onClick={openEditor} className="cursor-pointer rounded px-2 py-0.5 hover:bg-blue-50 transition">
+        <p className="text-xs text-gray-700">{fmt(scheduledStart)}</p>
+        {scheduledEnd && <p className="text-xs text-gray-400">→ {fmt(scheduledEnd)}</p>}
+        {recurrence && recurrence !== "NONE" && (
+          <p className="text-xs text-blue-400">{RECURRENCE_LABELS[recurrence]}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <span onClick={openEditor}
+      className="block cursor-pointer text-xs text-gray-200 rounded px-2 py-0.5 hover:bg-blue-50 hover:text-gray-400 transition">
+      —
     </span>
   );
 }
