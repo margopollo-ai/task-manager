@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProjectNav } from "@/components/layout/ProjectNav";
 
 interface Props {
   children: React.ReactNode;
@@ -26,10 +25,5 @@ export default async function ProjectLayout({ children, params }: Props) {
 
   if (!project) notFound();
 
-  return (
-    <div className="flex flex-col h-full -m-6">
-      <ProjectNav orgSlug={orgSlug} projectKey={projectKey} projectName={project.name} projectId={project.id} />
-      <div className="flex-1 overflow-auto p-6">{children}</div>
-    </div>
-  );
+  return <>{children}</>;
 }

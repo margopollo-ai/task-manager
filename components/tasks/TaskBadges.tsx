@@ -1,20 +1,20 @@
 export function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    TODO: "bg-gray-100 text-gray-600",
-    IN_PROGRESS: "bg-blue-100 text-blue-700",
-    IN_REVIEW: "bg-yellow-100 text-yellow-700",
-    DONE: "bg-green-100 text-green-700",
-    CANCELLED: "bg-red-100 text-red-600",
+    TODO: "bg-[#f1f3f4] text-[#5f6368]",
+    IN_PROGRESS: "bg-[#e8f0fe] text-[#1a73e8]",
+    IN_REVIEW: "bg-[#fef7e0] text-[#f29900]",
+    DONE: "bg-[#e6f4ea] text-[#188038]",
+    CANCELLED: "bg-[#fce8e6] text-[#d93025]",
   };
   const labels: Record<string, string> = {
     TODO: "To Do",
     IN_PROGRESS: "In Progress",
-    IN_REVIEW: "In Review",
+    IN_REVIEW: "Follow Up",
     DONE: "Done",
     CANCELLED: "Cancelled",
   };
   return (
-    <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${styles[status] ?? "bg-gray-100 text-gray-600"}`}>
+    <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${styles[status] ?? "bg-[#f1f3f4] text-[#5f6368]"}`}>
       {labels[status] ?? status}
     </span>
   );

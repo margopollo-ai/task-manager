@@ -98,7 +98,7 @@ export default function GoalsPage() {
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 bg-blue-600 text-white text-sm px-3 py-1.5 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-1.5 bg-[#1a73e8] text-white text-sm px-3 py-1.5 rounded-lg hover:bg-[#1765cc] transition"
         >
           <Plus className="w-4 h-4" />
           New goal
@@ -106,20 +106,20 @@ export default function GoalsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mb-6 bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
+        <form onSubmit={handleCreate} className="mb-6 bg-white border border-[#dadce0] rounded-2xl p-4 space-y-3 shadow-sm">
           <input
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Goal title"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-[#dadce0] rounded-lg px-3 py-2 text-sm text-[#202124] focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description (optional)"
             rows={2}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full border border-[#dadce0] rounded-lg px-3 py-2 text-sm text-[#202124] focus:outline-none focus:ring-2 focus:ring-[#1a73e8] resize-none"
           />
           <div className="flex gap-2">
             <button
@@ -209,7 +209,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
   };
 
   return (
-    <li ref={setNodeRef} style={style} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <li ref={setNodeRef} style={style} className="bg-white border border-[#dadce0] rounded-2xl shadow-sm overflow-hidden">
       <div className="p-4">
         {isEditing ? (
           <div className="space-y-2">
@@ -218,7 +218,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
               value={editTitle}
               onChange={(e) => onEditTitleChange(e.target.value)}
               placeholder="Goal title"
-              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-[#dadce0] rounded-lg px-3 py-1.5 text-sm text-[#202124] focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
             />
             <div className="flex items-center gap-2">
               <label className="text-xs text-gray-500 shrink-0">Key:</label>
@@ -234,19 +234,19 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
               value={editDescription}
               onChange={(e) => onEditDescriptionChange(e.target.value)}
               rows={2}
-              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-[#dadce0] rounded-lg px-3 py-1.5 text-sm text-[#202124] focus:outline-none focus:ring-2 focus:ring-[#1a73e8] resize-none"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => onSave(goal.id)}
                 disabled={isSaving}
-                className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                className="bg-[#1a73e8] text-white text-xs px-3 py-1.5 rounded-lg hover:bg-[#1765cc] disabled:opacity-50 transition"
               >
                 Save
               </button>
               <button
                 onClick={onCancelEdit}
-                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+                className="text-xs px-3 py-1.5 rounded-lg border border-[#dadce0] text-[#5f6368] hover:bg-[#f1f3f4] transition"
               >
                 Cancel
               </button>
@@ -257,7 +257,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
             <button
               {...attributes}
               {...listeners}
-              className="mt-0.5 p-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+              className="mt-0.5 p-1 text-[#dadce0] hover:text-[#5f6368] cursor-grab active:cursor-grabbing touch-none"
               aria-label="Drag to reorder"
             >
               <GripVertical className="w-4 h-4" />
@@ -273,7 +273,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
               {goal._count.tasks > 0 ? (
                 <button
                   onClick={() => setExpanded((v) => !v)}
-                  className="text-xs text-blue-500 hover:text-blue-700 mt-1.5 flex items-center gap-1 transition"
+                  className="text-xs text-[#1a73e8] hover:text-[#1765cc] mt-1.5 flex items-center gap-1 transition"
                 >
                   <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`} />
                   {goal._count.tasks} linked {goal._count.tasks === 1 ? "task" : "tasks"}
@@ -285,14 +285,14 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => onStartEdit(goal)}
-                className="p-1.5 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+                className="p-1.5 rounded-full hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] transition"
                 title="Edit goal"
               >
                 <Pencil className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onDelete(goal.id)}
-                className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+                className="p-1.5 rounded-full hover:bg-red-50 text-[#5f6368] hover:text-red-500 transition"
                 title="Delete goal"
               >
                 <Trash2 className="w-4 h-4" />
@@ -303,7 +303,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey
       </div>
 
       {expanded && !isEditing && (
-        <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+        <div className="border-t border-[#f1f3f4] bg-[#f8f9fa] px-4 py-3">
           {loadingTasks ? (
             <div className="space-y-2">
               {[...Array(2)].map((_, i) => <div key={i} className="h-8 bg-gray-200 animate-pulse rounded-lg" />)}
@@ -329,7 +329,7 @@ function TaskList({ tasks, goalKey }: { tasks: NonNullable<ReturnType<typeof use
     CANCELLED: "bg-red-100 text-red-600",
   };
   const statusLabel: Record<string, string> = {
-    TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "In Review", DONE: "Done", CANCELLED: "Cancelled",
+    TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "Follow Up", DONE: "Done", CANCELLED: "Cancelled",
   };
   return (
     <ul className="space-y-1.5">
@@ -337,7 +337,7 @@ function TaskList({ tasks, goalKey }: { tasks: NonNullable<ReturnType<typeof use
         <li key={task.id}>
           <button
             onClick={() => open(task.id)}
-            className="w-full flex items-center justify-between rounded-lg px-3 py-2 bg-white border border-gray-200 hover:border-blue-300 transition text-xs text-left"
+            className="w-full flex items-center justify-between rounded-xl px-3 py-2 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:bg-[#e8f0fe]/30 transition text-xs text-left"
           >
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-mono text-gray-400 shrink-0">

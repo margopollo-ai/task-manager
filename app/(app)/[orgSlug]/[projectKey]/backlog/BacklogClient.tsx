@@ -39,7 +39,7 @@ const STATUS_OPTIONS = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"]
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 
 const STATUS_LABELS: Record<string, string> = {
-  TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "In Review", DONE: "Done", CANCELLED: "Cancelled",
+  TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "Follow Up", DONE: "Done", CANCELLED: "Cancelled",
 };
 
 export function BacklogClient({ projectId, projectKey, members, currentUserId }: Props) {
@@ -68,33 +68,33 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
             <option value="">All statuses</option>
             {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
           </select>
 
           <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}
-            className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
             <option value="">All priorities</option>
             {PRIORITY_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
 
           <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
             <option value="">All assignees</option>
             {members.map((m) => <option key={m.id} value={m.id}>{m.name ?? m.id}</option>)}
           </select>
 
           {activeFilters > 0 && (
             <button onClick={() => { setStatusFilter(""); setPriorityFilter(""); setAssigneeFilter(""); }}
-              className="text-xs text-gray-400 flex items-center gap-1 hover:text-gray-600">
+              className="text-xs text-[#5f6368] flex items-center gap-1 hover:text-gray-600">
               <X className="w-3 h-3" /> Clear filters
             </button>
           )}
         </div>
 
         <button onClick={() => setShowCreateForm(true)}
-          className="flex items-center gap-1.5 text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shrink-0">
+          className="flex items-center gap-1.5 text-sm bg-[#1a73e8] text-white px-3 py-1.5 rounded-lg hover:bg-[#1765cc] transition shrink-0">
           <Plus className="w-4 h-4" /> New task
         </button>
       </div>
@@ -105,10 +105,10 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
       )}
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-[#dadce0] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-gray-400 font-medium border-b border-gray-100 bg-gray-50">
+            <tr className="text-xs text-[#5f6368] font-medium border-b border-[#f1f3f4] bg-[#f1f3f4]">
               <th className="text-left px-4 py-2.5 w-24">ID</th>
               <th className="text-left px-4 py-2.5">Title</th>
               <th className="text-left px-4 py-2.5 w-32">Status</th>
@@ -122,7 +122,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
           <tbody>
             {isLoading ? (
               [...Array(5)].map((_, i) => (
-                <tr key={i} className="border-b border-gray-50">
+                <tr key={i} className="border-b border-[#f1f3f4]">
                   {[...Array(8)].map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="h-3 bg-gray-100 animate-pulse rounded" />
@@ -132,14 +132,14 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
               ))
             ) : tasks.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={8} className="text-center py-12 text-[#5f6368] text-sm">
                   No tasks found. Create your first task above.
                 </td>
               </tr>
             ) : (
               tasks.map((task: TaskRow) => (
-                <tr key={task.id} className="border-b border-gray-50 hover:bg-gray-50/60 group">
-                  <td className="px-4 py-2 font-mono text-xs text-gray-400 whitespace-nowrap">
+                <tr key={task.id} className="border-b border-[#f1f3f4] hover:bg-[#f1f3f4]/60 group">
+                  <td className="px-4 py-2 font-mono text-xs text-[#5f6368] whitespace-nowrap">
                     {task.goal?.key && task.goalSequenceNumber
                       ? `${task.goal.key}-${task.goalSequenceNumber}`
                       : `${projectKey}-${task.sequenceNumber}`}
@@ -149,7 +149,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
                     <InlineText
                       value={task.title}
                       onSave={(v) => save(task.id, { title: v })}
-                      className="font-medium text-gray-800"
+                      className="font-medium text-[#202124]"
                     />
                   </td>
 
@@ -200,7 +200,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
                     <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
                       <button
                         onClick={() => open(task.id)}
-                        className="p-1 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+                        className="p-1 rounded hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] transition"
                         title="Edit task"
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -224,7 +224,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
       </div>
 
       {!isLoading && tasks.length > 0 && (
-        <p className="text-xs text-gray-400">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</p>
+        <p className="text-xs text-[#5f6368]">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</p>
       )}
     </div>
   );
@@ -253,7 +253,7 @@ function InlineText({ value, onSave, className }: { value: string; onSave: (v: s
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") { setEditing(false); setDraft(value); } }}
-        className="w-full border border-blue-400 rounded px-2 py-0.5 text-sm text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="w-full border border-[#1a73e8] rounded px-2 py-0.5 text-sm text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
       />
     );
   }
@@ -261,7 +261,7 @@ function InlineText({ value, onSave, className }: { value: string; onSave: (v: s
   return (
     <span
       onClick={() => { setDraft(value); setEditing(true); }}
-      className={`block cursor-text truncate rounded px-2 py-0.5 hover:bg-blue-50 transition ${className ?? ""}`}
+      className={`block cursor-text truncate rounded px-2 py-0.5 hover:bg-[#f1f3f4] transition ${className ?? ""}`}
     >
       {value}
     </span>
@@ -283,7 +283,7 @@ function InlineSelect({ value, options, onChange, renderDisplay }: {
         value={value}
         onChange={(e) => { onChange(e.target.value); setEditing(false); }}
         onBlur={() => setEditing(false)}
-        className="border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="border border-[#1a73e8] rounded px-1.5 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
       >
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -293,7 +293,7 @@ function InlineSelect({ value, options, onChange, renderDisplay }: {
   return (
     <span
       onClick={() => setEditing(true)}
-      className="cursor-pointer rounded px-1 py-0.5 hover:bg-blue-50 transition inline-flex"
+      className="cursor-pointer rounded px-1 py-0.5 hover:bg-[#f1f3f4] transition inline-flex"
     >
       {renderDisplay}
     </span>
@@ -341,14 +341,14 @@ function InlineAssignee({ assignee, members, onChange }: {
             if (e.key === "Escape") { setEditing(false); setQuery(""); }
           }}
           placeholder="Search name…"
-          className="w-32 border border-blue-400 rounded px-2 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-32 border border-[#1a73e8] rounded px-2 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
         />
         {filtered.length > 0 && (
-          <ul className="absolute z-50 top-full left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden text-xs">
+          <ul className="absolute z-50 top-full left-0 mt-1 w-40 bg-white border border-[#dadce0] rounded-lg shadow-lg overflow-hidden text-xs">
             <li>
               <button
                 onMouseDown={(e) => { e.preventDefault(); select(""); }}
-                className="w-full text-left px-3 py-1.5 text-gray-400 hover:bg-gray-50"
+                className="w-full text-left px-3 py-1.5 text-[#5f6368] hover:bg-[#f1f3f4]"
               >
                 Unassigned
               </button>
@@ -357,7 +357,7 @@ function InlineAssignee({ assignee, members, onChange }: {
               <li key={m.id}>
                 <button
                   onMouseDown={(e) => { e.preventDefault(); select(m.id); }}
-                  className="w-full text-left px-3 py-1.5 text-gray-700 hover:bg-blue-50"
+                  className="w-full text-left px-3 py-1.5 text-gray-700 hover:bg-[#e8f0fe]"
                 >
                   {m.name ?? m.id}
                 </button>
@@ -372,7 +372,7 @@ function InlineAssignee({ assignee, members, onChange }: {
   return (
     <span
       onClick={() => setEditing(true)}
-      className="block cursor-pointer text-xs text-gray-500 rounded px-2 py-0.5 hover:bg-blue-50 transition"
+      className="block cursor-pointer text-xs text-[#5f6368] rounded px-2 py-0.5 hover:bg-[#f1f3f4] transition"
     >
       {assignee?.name ?? <span className="text-gray-300">—</span>}
     </span>
@@ -428,25 +428,25 @@ function InlineSchedule({ scheduledStart, scheduledEnd, recurrence, title, onSav
     return (
       <div className="space-y-1.5 py-1">
         <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)}
-          className="w-full border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          className="w-full border border-[#1a73e8] rounded px-1.5 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
         <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)}
-          className="w-full border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          className="w-full border border-[#1a73e8] rounded px-1.5 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
         <select value={repeat} onChange={(e) => setRepeat(e.target.value)}
-          className="w-full border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="w-full border border-[#1a73e8] rounded px-1.5 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
           {Object.entries(RECURRENCE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
         <div className="flex items-center gap-1.5">
           <button onClick={commit}
-            className="text-xs bg-blue-600 text-white px-2.5 py-0.5 rounded hover:bg-blue-700 transition">
+            className="text-xs bg-[#1a73e8] text-white px-2.5 py-0.5 rounded hover:bg-[#1765cc] transition">
             Save
           </button>
           <button onClick={() => setEditing(false)}
-            className="text-xs text-gray-400 hover:text-gray-600 px-1">
+            className="text-xs text-[#5f6368] hover:text-gray-600 px-1">
             Cancel
           </button>
           {start && end && (
             <a href={buildGCalUrl(title, start, end, repeat)} target="_blank" rel="noopener noreferrer"
-              className="ml-auto text-blue-500 hover:text-blue-700" title="Add to Google Calendar">
+              className="ml-auto text-[#1a73e8] hover:text-[#1765cc]" title="Add to Google Calendar">
               <CalendarPlus className="w-3.5 h-3.5" />
             </a>
           )}
@@ -458,11 +458,11 @@ function InlineSchedule({ scheduledStart, scheduledEnd, recurrence, title, onSav
   if (scheduledStart) {
     const fmt = (s: string) => new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
     return (
-      <div onClick={openEditor} className="cursor-pointer rounded px-2 py-0.5 hover:bg-blue-50 transition">
+      <div onClick={openEditor} className="cursor-pointer rounded px-2 py-0.5 hover:bg-[#f1f3f4] transition">
         <p className="text-xs text-gray-700">{fmt(scheduledStart)}</p>
-        {scheduledEnd && <p className="text-xs text-gray-400">→ {fmt(scheduledEnd)}</p>}
+        {scheduledEnd && <p className="text-xs text-[#5f6368]">→ {fmt(scheduledEnd)}</p>}
         {recurrence && recurrence !== "NONE" && (
-          <p className="text-xs text-blue-400">{RECURRENCE_LABELS[recurrence]}</p>
+          <p className="text-xs text-[#1a73e8]">{RECURRENCE_LABELS[recurrence]}</p>
         )}
       </div>
     );
@@ -470,7 +470,7 @@ function InlineSchedule({ scheduledStart, scheduledEnd, recurrence, title, onSav
 
   return (
     <span onClick={openEditor}
-      className="block cursor-pointer text-xs text-gray-200 rounded px-2 py-0.5 hover:bg-blue-50 hover:text-gray-400 transition">
+      className="block cursor-pointer text-xs text-gray-200 rounded px-2 py-0.5 hover:bg-[#f1f3f4] hover:text-[#5f6368] transition">
       —
     </span>
   );
@@ -494,7 +494,7 @@ function InlineDate({ value, onSave }: { value: string; onSave: (v: string) => v
         onChange={(e) => setDraft(e.target.value)}
         onBlur={() => commit(draft)}
         onKeyDown={(e) => { if (e.key === "Enter") commit(draft); if (e.key === "Escape") { setEditing(false); setDraft(value); } }}
-        className="border border-blue-400 rounded px-1.5 py-0.5 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="border border-[#1a73e8] rounded px-1.5 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
       />
     );
   }
@@ -502,7 +502,7 @@ function InlineDate({ value, onSave }: { value: string; onSave: (v: string) => v
   return (
     <span
       onClick={() => { setDraft(value); setEditing(true); }}
-      className="block cursor-pointer text-xs text-gray-400 rounded px-2 py-0.5 hover:bg-blue-50 transition"
+      className="block cursor-pointer text-xs text-[#5f6368] rounded px-2 py-0.5 hover:bg-[#f1f3f4] transition"
     >
       {value ? new Date(value + "T12:00:00").toLocaleDateString("en-US") : <span className="text-gray-200">—</span>}
     </span>
@@ -541,34 +541,34 @@ function CreateTaskForm({ projectId, members, currentUserId, onClose }: {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+    <form onSubmit={handleSubmit} className="bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-4 space-y-3">
       <input autoFocus required placeholder="Task title…" value={title} onChange={(e) => setTitle(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        className="w-full border border-[#dadce0] rounded-lg px-3 py-2 text-sm text-[#202124] placeholder:text-[#5f6368] focus:outline-none focus:ring-2 focus:ring-[#1a73e8]" />
       <div className="flex gap-2 flex-wrap">
         <select value={goalId} onChange={(e) => setGoalId(e.target.value)}
-          className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
           <option value="">No goal</option>
           {goals?.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
         </select>
         <select value={priority} onChange={(e) => setPriority(e.target.value)}
-          className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
           {PRIORITY_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
         <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}
-          className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
           <option value="">Unassigned</option>
           {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
         </select>
         <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
-          className="text-xs text-blue-900 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
       </div>
       <div className="flex gap-2">
         <button type="submit" disabled={createTask.isPending}
-          className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition">
+          className="text-sm bg-[#1a73e8] text-white px-4 py-1.5 rounded-lg hover:bg-[#1765cc] disabled:opacity-50 transition">
           {createTask.isPending ? "Creating…" : "Create task"}
         </button>
         <button type="button" onClick={onClose}
-          className="text-sm text-gray-500 px-4 py-1.5 rounded-lg hover:bg-gray-100 transition">
+          className="text-sm text-[#5f6368] px-4 py-1.5 rounded-lg hover:bg-[#f1f3f4] transition">
           Cancel
         </button>
       </div>

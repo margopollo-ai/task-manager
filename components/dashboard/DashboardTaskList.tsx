@@ -101,7 +101,7 @@ function StatusBadge({ status }: { status: string }) {
     CANCELLED: "bg-red-100 text-red-600",
   };
   const label: Record<string, string> = {
-    TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "In Review", DONE: "Done", CANCELLED: "Cancelled",
+    TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "Follow Up", DONE: "Done", CANCELLED: "Cancelled",
   };
   return (
     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? ""}`}>

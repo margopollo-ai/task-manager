@@ -4,7 +4,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
-import { DashboardTaskList } from "@/components/dashboard/DashboardTaskList";
 import { DashboardProjects } from "@/components/dashboard/DashboardProjects";
 
 export default async function DashboardPage() {
@@ -13,49 +12,15 @@ export default async function DashboardPage() {
 
   const memberships = await prisma.organizationMember.findMany({
     where: { userId: session.user.id },
-    include: {
-      organization: {
-        include: { projects: true },
-      },
-    },
-  });
-
-  const assignedTasks = await prisma.task.findMany({
-    where: { assigneeId: session.user.id, status: { in: ["TODO", "IN_PROGRESS", "IN_REVIEW"] } },
-    include: { project: { include: { organization: true } } },
-    orderBy: { updatedAt: "desc" },
-    take: 5,
+    include: { organization: { include: { projects: true } } },
   });
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {session.user.name?.split(" ")[0] ?? "there"}
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">Here&apos;s what&apos;s on your plate today.</p>
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
       </div>
 
-      {/* My Tasks */}
-      <section>
-        <h2 className="text-base font-semibold text-gray-700 mb-3">My open tasks</h2>
-        <DashboardTaskList tasks={assignedTasks.map((t) => ({
-          id: t.id,
-          title: t.title,
-          sequenceNumber: t.sequenceNumber,
-          status: t.status,
-          priority: t.priority,
-          goalId: t.goalId,
-          dueDate: t.dueDate ? t.dueDate.toISOString() : null,
-          project: {
-            key: t.project.key,
-            id: t.project.id,
-            organization: { slug: t.project.organization.slug },
-          },
-        }))} />
-      </section>
-
-      {/* Organizations & Projects */}
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-gray-700">Your organizations</h2>
@@ -91,4 +56,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

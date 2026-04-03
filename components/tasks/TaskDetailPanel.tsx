@@ -128,7 +128,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
       <div className="fixed inset-0 bg-black/20 z-40" onClick={close} />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-xl z-50 flex flex-col overflow-hidden">
+      <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col overflow-hidden" style={{ borderLeft: "1px solid var(--gc-border)" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 shrink-0">
           {isLoading || !task ? (
@@ -163,28 +163,28 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full text-xl font-semibold text-blue-900 border-b border-transparent hover:border-gray-200 focus:border-blue-500 outline-none bg-transparent pb-1"
+                className="w-full text-xl font-semibold text-[#202124] border-b border-transparent hover:border-[#dadce0] focus:border-[#1a73e8] outline-none bg-transparent pb-1"
               />
 
               {/* Attributes grid */}
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <Field label="Status">
                   <select value={status} onChange={(e) => setStatus(e.target.value)}
-                    className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
                     {STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
                   </select>
                 </Field>
 
                 <Field label="Priority">
                   <select value={priority} onChange={(e) => setPriority(e.target.value)}
-                    className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
                     {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </Field>
 
 <Field label="Assignee">
                   <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}
-                    className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
                     <option value="">Unassigned</option>
                     {members.map((m) => <option key={m.id} value={m.id}>{m.name ?? m.id}</option>)}
                   </select>
@@ -192,7 +192,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
 
                 <Field label="Goal">
                   <select value={goalId} onChange={(e) => setGoalId(e.target.value)}
-                    className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
                     <option value="">No goal</option>
                     {goals?.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
                   </select>
@@ -200,7 +200,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
 
                 <Field label="Due date">
                   <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                    className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
                 </Field>
 
                 <Field label="Labels">
@@ -219,7 +219,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
                         onChange={(e) => setLabelInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLabel())}
                         placeholder="Add label…"
-                        className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="flex-1 border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] placeholder:text-[#5f6368] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
                       />
                       <button onClick={addLabel} className="p-1 text-gray-400 hover:text-blue-600 border border-gray-200 rounded-md">
                         <Plus className="w-3.5 h-3.5" />
@@ -234,7 +234,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
                 <button
                   onClick={handleSave}
                   disabled={saveState === "saving"}
-                  className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                  className="bg-[#1a73e8] text-white text-sm px-4 py-1.5 rounded-lg hover:bg-[#1765cc] disabled:opacity-50 transition"
                 >
                   {saveState === "saving" ? "Saving…" : "Save changes"}
                 </button>
@@ -248,15 +248,15 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <Field label="Start">
                     <input type="datetime-local" value={scheduledStart} onChange={(e) => setScheduledStart(e.target.value)}
-                      className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                      className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
                   </Field>
                   <Field label="End">
                     <input type="datetime-local" value={scheduledEnd} onChange={(e) => setScheduledEnd(e.target.value)}
-                      className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                      className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
                   </Field>
                   <Field label="Repeats">
                     <select value={recurrence} onChange={(e) => setRecurrence(e.target.value)}
-                      className="w-full border border-gray-200 rounded-md px-2 py-1 text-xs text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                      className="w-full border border-[#dadce0] rounded-lg px-2 py-1 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
                       <option value="NONE">Does not repeat</option>
                       <option value="DAILY">Daily</option>
                       <option value="WEEKLY">Weekly</option>
@@ -269,7 +269,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
                         href={buildGoogleCalendarUrl({ title, description, scheduledStart, scheduledEnd, recurrence })}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition"
+                        className="inline-flex items-center gap-1.5 text-xs bg-[#1a73e8] text-white px-3 py-1.5 rounded-lg hover:bg-[#1765cc] transition"
                       >
                         <CalendarPlus className="w-3.5 h-3.5" />
                         Add to Calendar
@@ -287,7 +287,7 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add a description…"
-                  className="w-full text-sm text-blue-900 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                  className="w-full text-sm text-[#202124] border border-[#dadce0] rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-[#1a73e8] resize-none"
                 />
                 <p className="text-xs text-gray-400 mt-1">Description saves with the Save button above.</p>
               </div>
@@ -310,7 +310,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function statusLabel(s: string) {
-  return { TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "In Review", DONE: "Done", CANCELLED: "Cancelled" }[s] ?? s;
+  return { TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "Follow Up", DONE: "Done", CANCELLED: "Cancelled" }[s] ?? s;
 }
 
 function toLocalDateTimeInput(iso: string) {

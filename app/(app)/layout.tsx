@@ -24,11 +24,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" style={{ background: "var(--gc-white)" }}>
       <Sidebar projects={projects} />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar user={session.user} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-7" style={{ background: "var(--gc-white)" }}>{children}</main>
       </div>
       <TaskDetailPanel />
     </div>
