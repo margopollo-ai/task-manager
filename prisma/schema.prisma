@@ -1,0 +1,263 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth (NextAuth adapter tables) ───────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core models ──────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  ownedOrganizations  OrganizationMember[]
+  reportedTasks       Task[]               @relation("Reporter")
+  assignedTasks       Task[]               @relation("Assignee")
+  comments            Comment[]
+  attachments         Attachment[]
+  taskActivities      TaskActivity[]
+  notifications       Notification[]
+  goals               Goal[]
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members  OrganizationMember[]
+  projects Project[]
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  userId         String
+  organizationId String
+  role           MemberRole       @default(MEMBER)
+  joinedAt       DateTime         @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  key            String   // e.g. "PRJ" → task IDs like PRJ-1
+  organizationId String
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tasks        Task[]
+
+  @@unique([organizationId, key])
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  position    Float    @default(0)
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+}
+
+model Task {
+  id             String       @id @default(cuid())
+  sequenceNumber Int
+  title          String
+  description    String?
+  status         TaskStatus   @default(TODO)
+  priority       TaskPriority @default(MEDIUM)
+  type           TaskType     @default(TASK)
+  position       Float        @default(0)
+
+  projectId    String
+  assigneeId   String?
+  reporterId   String
+  parentTaskId String?
+  goalId       String?
+
+  dueDate        DateTime?
+  scheduledStart DateTime?
+  scheduledEnd   DateTime?
+  recurrence     RecurrenceType @default(NONE)
+  estimatedHours Decimal?
+  labels         String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee   User?     @relation("Assignee", fields: [assigneeId], references: [id])
+  reporter   User      @relation("Reporter", fields: [reporterId], references: [id])
+  parentTask Task?     @relation("Subtasks", fields: [parentTaskId], references: [id])
+  subtasks   Task[]    @relation("Subtasks")
+  goal       Goal?     @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  comments    Comment[]
+  attachments Attachment[]
+  activities  TaskActivity[]
+
+  @@unique([projectId, sequenceNumber])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  filename    String
+  storageKey  String
+  mimeType    String
+  sizeBytes   Int
+  taskId      String
+  uploadedById String
+  createdAt   DateTime @default(now())
+
+  task       Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+}
+
+model TaskActivity {
+  id        String           @id @default(cuid())
+  taskId    String
+  actorId   String
+  type      TaskActivityType
+  payload   Json?
+  createdAt DateTime         @default(now())
+
+  task  Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  taskId    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskType {
+  TASK
+  BUG
+  STORY
+  EPIC
+}
+
+enum RecurrenceType {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum TaskActivityType {
+  CREATED
+  STATUS_CHANGED
+  ASSIGNED
+  PRIORITY_CHANGED
+  DUE_DATE_CHANGED
+  SCHEDULED
+  COMMENTED
+  ATTACHMENT_ADDED
+  TITLE_CHANGED
+  DESCRIPTION_CHANGED
+}
