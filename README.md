@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TaskFlow
+
+A task management app built with Next.js 16, Prisma, and Neon Postgres. Organize work around goals, manage tasks inline, and schedule meetings directly to Google Calendar.
+
+## Features
+
+- **Goals** — Create and prioritize goals with drag-and-drop reordering. Tag tasks to goals and see linked tasks at a glance.
+- **Task backlog** — Inline editing for title, status, priority, assignee, and due date. No modals needed for quick edits.
+- **Task detail panel** — Edit labels, description, scheduling, and goal assignment from a slide-in panel.
+- **Scheduling** — Set a start/end time and recurrence (daily, weekly, monthly), then add it directly to Google Calendar with one click.
+- **Dashboard (Tasks tab)** — See your open tasks across all projects with inline goal tagging.
+- **Authentication** — Email/password sign up and login via NextAuth.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **Database**: Neon Postgres via Prisma ORM
+- **Auth**: NextAuth v5
+- **UI**: Tailwind CSS, Lucide icons, dnd-kit (drag & drop)
+- **Data fetching**: TanStack Query
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- A [Neon](https://neon.tech) Postgres database
+
+### Setup
+
+1. Clone the repo:
+
+```bash
+git clone https://github.com/margopollo-ai/task-manager.git
+cd task-manager
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env.local` file with the following variables:
+
+```env
+DATABASE_URL=your_neon_connection_string
+NEXTAUTH_SECRET=your_secret   # generate with: openssl rand -base64 32
+NEXTAUTH_URL=http://localhost:3000
+```
+
+4. Run database migrations:
+
+```bash
+npx prisma migrate dev
+```
+
+5. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to get started.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+├── (app)/              # Authenticated app routes
+│   ├── dashboard/      # Tasks tab — your open tasks
+│   ├── goals/          # Goals management page
+│   └── [orgSlug]/[projectKey]/
+│       └── backlog/    # Inline-editable task table
+├── (auth)/             # Login & signup pages
+└── api/                # API routes (tasks, goals, projects, auth)
 
-## Learn More
+components/
+├── tasks/              # TaskDetailPanel, TaskBadges
+├── dashboard/          # DashboardTaskList
+└── layout/             # Sidebar, Navbar
 
-To learn more about Next.js, take a look at the following resources:
+lib/
+├── hooks/              # useGoals, useTasks (TanStack Query)
+├── validations/        # Zod schemas
+└── prisma.ts           # Prisma client
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
