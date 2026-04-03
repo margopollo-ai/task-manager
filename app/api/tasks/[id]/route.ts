@@ -7,6 +7,7 @@ import { updateTaskSchema } from "@/lib/validations/task";
 const taskInclude = {
   assignee: { select: { id: true, name: true, image: true } },
   reporter: { select: { id: true, name: true, image: true } },
+  goal: { select: { key: true } },
   comments: {
     include: { author: { select: { id: true, name: true, image: true } } },
     orderBy: { createdAt: "asc" as const },
@@ -39,13 +40,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     const data = updateTaskSchema.parse(body);
 
-    const existing = await prisma.task.findUnique({ where: { id }, select: { status: true, assigneeId: true, priority: true, title: true } });
+    const existing = await prisma.task.findUnique({ where: { id }, select: { status: true, assigneeId: true, priority: true, title: true, goalId: true, goalSequenceNumber: true } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // Assign goalSequenceNumber when goalId is set for the first time or changed
+    let goalSequenceNumber: number | undefined;
+    if (data.goalId && data.goalId !== existing.goalId) {
+      const lastGoalTask = await prisma.task.findFirst({
+        where: { goalId: data.goalId },
+        orderBy: { goalSequenceNumber: "desc" },
+        select: { goalSequenceNumber: true },
+      });
+      goalSequenceNumber = (lastGoalTask?.goalSequenceNumber ?? 0) + 1;
+    }
 
     const task = await prisma.task.update({
       where: { id },
       data: {
         ...data,
+        goalSequenceNumber: goalSequenceNumber ?? (data.goalId === null ? null : undefined),
         dueDate: data.dueDate !== undefined ? (data.dueDate ? new Date(data.dueDate) : null) : undefined,
         scheduledStart: data.scheduledStart !== undefined ? (data.scheduledStart ? new Date(data.scheduledStart) : null) : undefined,
         scheduledEnd: data.scheduledEnd !== undefined ? (data.scheduledEnd ? new Date(data.scheduledEnd) : null) : undefined,

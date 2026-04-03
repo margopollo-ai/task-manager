@@ -26,12 +26,32 @@ export async function GET(req: Request) {
     include: {
       assignee: { select: { id: true, name: true, image: true } },
       reporter: { select: { id: true, name: true, image: true } },
+      goal: { select: { key: true, position: true } },
       _count: { select: { comments: true } },
     },
-    orderBy: [{ status: "asc" }, { position: "asc" }],
   });
 
-  return NextResponse.json(tasks);
+  const PRIORITY_RANK: Record<string, number> = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+
+  const sorted = tasks.sort((a, b) => {
+    // 1. Goal position (tasks with a goal first, ordered by goal position; no goal = last)
+    const aGoalPos = a.goal ? a.goal.position : Infinity;
+    const bGoalPos = b.goal ? b.goal.position : Infinity;
+    if (aGoalPos !== bGoalPos) return aGoalPos - bGoalPos;
+
+    // 2. Task priority (URGENT first)
+    const aPriority = PRIORITY_RANK[a.priority] ?? 99;
+    const bPriority = PRIORITY_RANK[b.priority] ?? 99;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+
+    // 3. Due date (nearest first, nulls last)
+    if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    if (a.dueDate) return -1;
+    if (b.dueDate) return 1;
+    return 0;
+  });
+
+  return NextResponse.json(sorted);
 }
 
 export async function POST(req: Request) {
@@ -58,10 +78,22 @@ export async function POST(req: Request) {
     });
     const position = (lastTodo?.position ?? 0) + 1000;
 
+    // Compute per-goal sequence number if a goal is set
+    let goalSequenceNumber: number | undefined;
+    if (data.goalId) {
+      const lastGoalTask = await prisma.task.findFirst({
+        where: { goalId: data.goalId },
+        orderBy: { goalSequenceNumber: "desc" },
+        select: { goalSequenceNumber: true },
+      });
+      goalSequenceNumber = (lastGoalTask?.goalSequenceNumber ?? 0) + 1;
+    }
+
     const task = await prisma.task.create({
       data: {
         ...data,
         sequenceNumber,
+        goalSequenceNumber,
         position,
         reporterId: session.user.id,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,

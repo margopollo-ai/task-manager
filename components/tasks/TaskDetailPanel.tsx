@@ -135,7 +135,9 @@ export function TaskDetailPanel({ projectId: projectIdProp, members: membersProp
             <div className="h-4 w-32 bg-gray-200 animate-pulse rounded" />
           ) : (
             <span className="text-xs font-mono text-gray-400">
-              {task.project?.key ?? ""}-{task.sequenceNumber}
+              {task.goal?.key && task.goalSequenceNumber
+                ? `${task.goal.key}-${task.goalSequenceNumber}`
+                : `${task.project?.key ?? ""}-${task.sequenceNumber}`}
             </span>
           )}
           <div className="flex items-center gap-2">

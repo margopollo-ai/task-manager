@@ -113,6 +113,7 @@ model Goal {
   id          String   @id @default(cuid())
   title       String
   description String?
+  key         String   // e.g. "MAR" for "Marketing"
   position    Float    @default(0)
   userId      String
   createdAt   DateTime @default(now())
@@ -120,6 +121,8 @@ model Goal {
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks Task[]
+
+  @@unique([userId, key])
 }
 
 model Task {
@@ -136,7 +139,8 @@ model Task {
   assigneeId   String?
   reporterId   String
   parentTaskId String?
-  goalId       String?
+  goalId             String?
+  goalSequenceNumber Int?
 
   dueDate        DateTime?
   scheduledStart DateTime?

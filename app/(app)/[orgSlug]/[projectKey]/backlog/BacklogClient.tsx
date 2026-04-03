@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useTasks, useCreateTask, useUpdateTask } from "@/lib/hooks/useTasks";
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from "@/lib/hooks/useTasks";
 import { useGoals } from "@/lib/hooks/useGoals";
 import { useTaskPanel } from "@/lib/store";
 import { StatusBadge, PriorityBadge } from "@/components/tasks/TaskBadges";
-import { Plus, X, MoreHorizontal, CalendarPlus } from "lucide-react";
+import { Plus, X, Pencil, Trash2, CalendarPlus } from "lucide-react";
 
 interface Member {
   id: string;
@@ -23,10 +23,12 @@ interface Props {
 interface TaskRow {
   id: string;
   sequenceNumber: number;
+  goalSequenceNumber?: number | null;
   title: string;
   status: string;
   priority: string;
   assignee?: { id: string; name: string | null } | null;
+  goal?: { key: string } | null;
   dueDate?: string | null;
   scheduledStart?: string | null;
   scheduledEnd?: string | null;
@@ -53,6 +55,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
   const { data: tasks = [], isLoading } = useTasks(projectId, filters);
   const { open } = useTaskPanel();
   const updateTask = useUpdateTask(projectId);
+  const deleteTask = useDeleteTask(projectId);
   const activeFilters = [statusFilter, priorityFilter, assigneeFilter].filter(Boolean).length;
 
   function save(id: string, data: Record<string, unknown>) {
@@ -137,7 +140,9 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
               tasks.map((task: TaskRow) => (
                 <tr key={task.id} className="border-b border-gray-50 hover:bg-gray-50/60 group">
                   <td className="px-4 py-2 font-mono text-xs text-gray-400 whitespace-nowrap">
-                    {projectKey}-{task.sequenceNumber}
+                    {task.goal?.key && task.goalSequenceNumber
+                      ? `${task.goal.key}-${task.goalSequenceNumber}`
+                      : `${projectKey}-${task.sequenceNumber}`}
                   </td>
 
                   <td className="px-4 py-2 max-w-xs">
@@ -192,13 +197,24 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
                   </td>
 
                   <td className="px-2 py-2">
-                    <button
-                      onClick={() => open(task.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition"
-                      title="Edit labels & description"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
+                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
+                      <button
+                        onClick={() => open(task.id)}
+                        className="p-1 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+                        title="Edit task"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this task?")) deleteTask.mutate(task.id);
+                        }}
+                        className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+                        title="Delete task"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

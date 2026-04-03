@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 const updateGoalSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
+  key: z.string().min(1).max(10).optional(),
   position: z.number().optional(),
 });
 

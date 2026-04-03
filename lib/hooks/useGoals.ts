@@ -6,6 +6,7 @@ export interface Goal {
   id: string;
   title: string;
   description?: string | null;
+  key: string;
   position: number;
   _count: { tasks: number };
 }
@@ -14,6 +15,7 @@ export interface GoalTask {
   id: string;
   title: string;
   sequenceNumber: number;
+  goalSequenceNumber?: number | null;
   status: string;
   priority: string;
   project: { key: string; organization: { slug: string } };
@@ -55,7 +57,7 @@ export function useCreateGoal() {
 export function useUpdateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; key?: string } }) =>
       fetch(`/api/goals/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

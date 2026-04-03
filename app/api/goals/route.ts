@@ -6,7 +6,14 @@ import { prisma } from "@/lib/prisma";
 const createGoalSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().optional(),
+  key: z.string().min(1).max(10).optional(),
 });
+
+function generateGoalKey(title: string): string {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+  return words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+}
 
 export async function GET() {
   const session = await auth();
@@ -36,8 +43,16 @@ export async function POST(req: Request) {
     });
     const position = (last?.position ?? 0) + 1000;
 
+    // Generate a unique key for this user
+    let baseKey = data.key ? data.key.toUpperCase() : generateGoalKey(data.title);
+    let key = baseKey;
+    let suffix = 2;
+    while (await prisma.goal.findFirst({ where: { userId: session.user.id, key } })) {
+      key = baseKey + suffix++;
+    }
+
     const goal = await prisma.goal.create({
-      data: { ...data, userId: session.user.id, position },
+      data: { ...data, key, userId: session.user.id, position },
       include: { _count: { select: { tasks: true } } },
     });
 

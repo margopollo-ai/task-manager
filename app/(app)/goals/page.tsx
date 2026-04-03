@@ -33,6 +33,7 @@ export default function GoalsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editKey, setEditKey] = useState("");
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -55,11 +56,19 @@ export default function GoalsPage() {
     setEditingId(goal.id);
     setEditTitle(goal.title);
     setEditDescription(goal.description ?? "");
+    setEditKey(goal.key);
   }
 
   function handleUpdate(id: string) {
     updateGoal.mutate(
-      { id, data: { title: editTitle.trim(), description: editDescription.trim() || undefined } },
+      {
+        id,
+        data: {
+          title: editTitle.trim(),
+          description: editDescription.trim() || undefined,
+          key: editKey.trim().toUpperCase() || undefined,
+        },
+      },
       { onSuccess: () => setEditingId(null) }
     );
   }
@@ -153,8 +162,10 @@ export default function GoalsPage() {
                   isEditing={editingId === goal.id}
                   editTitle={editTitle}
                   editDescription={editDescription}
+                  editKey={editKey}
                   onEditTitleChange={setEditTitle}
                   onEditDescriptionChange={setEditDescription}
+                  onEditKeyChange={setEditKey}
                   onStartEdit={startEdit}
                   onSave={handleUpdate}
                   onCancelEdit={() => setEditingId(null)}
@@ -175,8 +186,10 @@ interface GoalItemProps {
   isEditing: boolean;
   editTitle: string;
   editDescription: string;
+  editKey: string;
   onEditTitleChange: (v: string) => void;
   onEditDescriptionChange: (v: string) => void;
+  onEditKeyChange: (v: string) => void;
   onStartEdit: (goal: Goal) => void;
   onSave: (id: string) => void;
   onCancelEdit: () => void;
@@ -184,7 +197,7 @@ interface GoalItemProps {
   isSaving: boolean;
 }
 
-function SortableGoalItem({ goal, isEditing, editTitle, editDescription, onEditTitleChange, onEditDescriptionChange, onStartEdit, onSave, onCancelEdit, onDelete, isSaving }: GoalItemProps) {
+function SortableGoalItem({ goal, isEditing, editTitle, editDescription, editKey, onEditTitleChange, onEditDescriptionChange, onEditKeyChange, onStartEdit, onSave, onCancelEdit, onDelete, isSaving }: GoalItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: goal.id });
   const [expanded, setExpanded] = useState(false);
   const { data: detail, isLoading: loadingTasks } = useGoal(goal.id, expanded);
@@ -204,8 +217,19 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, onEditT
               autoFocus
               value={editTitle}
               onChange={(e) => onEditTitleChange(e.target.value)}
+              placeholder="Goal title"
               className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-500 shrink-0">Key:</label>
+              <input
+                value={editKey}
+                onChange={(e) => onEditKeyChange(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
+                placeholder="e.g. MAR"
+                className="w-24 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-mono text-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-xs text-gray-400">Used as task ID prefix (e.g. MAR-1)</span>
+            </div>
             <textarea
               value={editDescription}
               onChange={(e) => onEditDescriptionChange(e.target.value)}
@@ -239,7 +263,10 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, onEditT
               <GripVertical className="w-4 h-4" />
             </button>
             <div className="flex-1 min-w-0">
-              <p className="font-extrabold text-fuchsia-600 text-lg">{goal.title}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-extrabold text-fuchsia-600 text-lg">{goal.title}</p>
+                <span className="text-xs font-mono bg-fuchsia-50 text-fuchsia-500 border border-fuchsia-200 px-1.5 py-0.5 rounded shrink-0">{goal.key}</span>
+              </div>
               {goal.description && (
                 <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{goal.description}</p>
               )}
@@ -284,7 +311,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, onEditT
           ) : detail?.tasks.length === 0 ? (
             <p className="text-xs text-gray-400">No tasks linked.</p>
           ) : (
-            <TaskList tasks={detail?.tasks ?? []} />
+            <TaskList tasks={detail?.tasks ?? []} goalKey={detail?.key ?? ""} />
           )}
         </div>
       )}
@@ -292,7 +319,7 @@ function SortableGoalItem({ goal, isEditing, editTitle, editDescription, onEditT
   );
 }
 
-function TaskList({ tasks }: { tasks: NonNullable<ReturnType<typeof useGoal>["data"]>["tasks"] }) {
+function TaskList({ tasks, goalKey }: { tasks: NonNullable<ReturnType<typeof useGoal>["data"]>["tasks"]; goalKey: string }) {
   const { open } = useTaskPanel();
   const statusMap: Record<string, string> = {
     TODO: "bg-gray-100 text-gray-600",
@@ -313,7 +340,11 @@ function TaskList({ tasks }: { tasks: NonNullable<ReturnType<typeof useGoal>["da
             className="w-full flex items-center justify-between rounded-lg px-3 py-2 bg-white border border-gray-200 hover:border-blue-300 transition text-xs text-left"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <span className="font-mono text-gray-400 shrink-0">{task.project.key}-{task.sequenceNumber}</span>
+              <span className="font-mono text-gray-400 shrink-0">
+                {task.goalSequenceNumber
+                  ? `${goalKey}-${task.goalSequenceNumber}`
+                  : `${task.project.key}-${task.sequenceNumber}`}
+              </span>
               <span className="text-gray-800 truncate">{task.title}</span>
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-3">
