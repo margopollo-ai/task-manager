@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutGrid, List, Calendar } from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -35,7 +35,6 @@ export function ProjectNav({ orgSlug, projectKey, projectName, projectId }: Prop
   const tabs = [
     { href: `${base}/board`, label: "Board", icon: LayoutGrid },
     { href: `${base}/backlog`, label: "Backlog", icon: List },
-    { href: `${base}/calendar`, label: "Calendar", icon: Calendar },
   ];
 
   return (

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { DashboardTaskList } from "@/components/dashboard/DashboardTaskList";
+import { DashboardProjects } from "@/components/dashboard/DashboardProjects";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -77,30 +78,14 @@ export default async function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            {memberships.map(({ organization }) => (
-              <div key={organization.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                <h3 className="font-semibold text-gray-800 mb-2">{organization.name}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {organization.projects.map((project) => (
-                    <Link
-                      key={project.id}
-                      href={`/${organization.slug}/${project.key.toLowerCase()}/board`}
-                      className="text-xs bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-md px-2.5 py-1 transition"
-                    >
-                      {project.name}
-                    </Link>
-                  ))}
-                  <Link
-                    href={`/${organization.slug}/new-project`}
-                    className="text-xs text-blue-500 hover:underline px-2.5 py-1"
-                  >
-                    + New project
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+          <DashboardProjects memberships={memberships.map(({ organization }) => ({
+            organization: {
+              id: organization.id,
+              name: organization.name,
+              slug: organization.slug,
+              projects: organization.projects.map((p) => ({ id: p.id, name: p.name, key: p.key })),
+            },
+          }))} />
         )}
       </section>
     </div>
