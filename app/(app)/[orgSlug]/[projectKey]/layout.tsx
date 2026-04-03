@@ -28,7 +28,7 @@ export default async function ProjectLayout({ children, params }: Props) {
 
   return (
     <div className="flex flex-col h-full -m-6">
-      <ProjectNav orgSlug={orgSlug} projectKey={projectKey} projectName={project.name} />
+      <ProjectNav orgSlug={orgSlug} projectKey={projectKey} projectName={project.name} projectId={project.id} />
       <div className="flex-1 overflow-auto p-6">{children}</div>
     </div>
   );
