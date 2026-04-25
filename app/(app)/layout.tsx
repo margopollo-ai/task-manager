@@ -9,10 +9,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const memberships = await prisma.organizationMember.findMany({
+  let memberships = await prisma.organizationMember.findMany({
     where: { userId: session.user.id },
     include: { organization: { include: { projects: { orderBy: { name: "asc" } } } } },
   });
+
+  // Auto-create a default org + project for new users
+  if (memberships.length === 0) {
+    const userName = session.user.name ?? session.user.email ?? "My";
+    const orgSlug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").slice(0, 48) + "-" + Date.now().toString(36);
+    const org = await prisma.organization.create({
+      data: {
+        name: userName,
+        slug: orgSlug,
+        members: { create: { userId: session.user.id, role: "OWNER" } },
+        projects: { create: { name: "My Tasks", key: "TASK" } },
+      },
+      include: { projects: true },
+    });
+    redirect(`/${orgSlug}/${org.projects[0].key.toLowerCase()}/board`);
+  }
 
   const projects = memberships.flatMap(({ organization }) =>
     organization.projects.map((p) => ({
