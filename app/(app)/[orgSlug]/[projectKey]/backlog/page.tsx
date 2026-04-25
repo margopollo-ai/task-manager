@@ -29,7 +29,7 @@ export default async function BacklogPage({ params }: Props) {
     where: { userId: session.user.id },
     select: { organizationId: true },
   });
-  const allOrgIds = allMemberships.map((m) => m.organizationId);
+  const allOrgIds = allMemberships.map((m: { organizationId: string }) => m.organizationId);
   const allProjects = await prisma.project.findMany({
     where: { organizationId: { in: allOrgIds } },
     select: { id: true },
