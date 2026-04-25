@@ -107,7 +107,7 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  URL slug <span className="text-gray-400 font-normal">taskflow.app/<strong>{slug || "…"}</strong></span>
+                  URL slug <span className="text-gray-400 font-normal">bloom.app/<strong>{slug || "…"}</strong></span>
                 </label>
                 <input
                   required

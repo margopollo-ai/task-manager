@@ -24,12 +24,10 @@ export function Navbar({ user }: NavbarProps) {
     <header className="h-16 bg-white border-b flex items-center justify-between px-4 shrink-0" style={{ borderColor: "var(--gc-border)" }}>
       {/* Logo */}
       <div className="flex items-center gap-2 pl-1">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="6" fill="#1a73e8" />
-          <path d="M8 14h12M14 8v12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/bloom-icon.png" alt="Bloom" width={32} height={32} className="rounded-md" />
         <span className="text-lg font-semibold tracking-tight" style={{ color: "var(--gc-text)", fontFamily: "var(--font-sans)" }}>
-          TaskFlow
+          Bloom
         </span>
       </div>
 

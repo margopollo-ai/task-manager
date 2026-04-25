@@ -19,13 +19,45 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const goals = await prisma.goal.findMany({
-    where: { userId: session.user.id },
-    include: { _count: { select: { tasks: true } } },
-    orderBy: { position: "asc" },
-  });
+  try {
+    const goals = await prisma.goal.findMany({
+      where: { userId: session.user.id },
+      include: { _count: { select: { tasks: true } } },
+      orderBy: { position: "asc" },
+    });
 
-  return NextResponse.json(goals);
+    if (goals.length === 0) return NextResponse.json([]);
+
+    const doneCounts = await prisma.task.groupBy({
+      by: ["goalId"],
+      where: {
+        goalId: { in: goals.map((g) => g.id) },
+        status: "DONE",
+      },
+      _count: { id: true },
+    });
+
+    const doneCountMap = new Map(doneCounts.map((d) => [d.goalId as string, d._count.id]));
+
+    const withCounts = goals.map((g) => ({
+      ...g,
+      doneTaskCount: doneCountMap.get(g.id) ?? 0,
+    }));
+
+    // Sort: active goals first (completedAt null, already ordered by position),
+    // then completed goals ordered by completedAt descending
+    const result = [
+      ...withCounts.filter((g) => g.completedAt === null),
+      ...withCounts
+        .filter((g) => g.completedAt !== null)
+        .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime()),
+    ];
+
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error("[GET /api/goals]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {

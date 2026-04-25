@@ -7,7 +7,7 @@ import { updateTaskSchema } from "@/lib/validations/task";
 const taskInclude = {
   assignee: { select: { id: true, name: true, image: true } },
   reporter: { select: { id: true, name: true, image: true } },
-  goal: { select: { key: true } },
+  goal: { select: { id: true, title: true, key: true, position: true } },
   comments: {
     include: { author: { select: { id: true, name: true, image: true } } },
     orderBy: { createdAt: "asc" as const },
@@ -38,16 +38,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   try {
     const body = await req.json();
+    console.log(`[PATCH /api/tasks/${id}] body:`, JSON.stringify(body).slice(0, 300));
     const data = updateTaskSchema.parse(body);
+
+    // Pull out scalar FK fields — Prisma requires relation-object form for updates
+    const { assigneeId: assigneeIdData, goalId: goalIdData, ...restData } = data;
 
     const existing = await prisma.task.findUnique({ where: { id }, select: { status: true, assigneeId: true, priority: true, title: true, goalId: true, goalSequenceNumber: true } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     // Assign goalSequenceNumber when goalId is set for the first time or changed
     let goalSequenceNumber: number | undefined;
-    if (data.goalId && data.goalId !== existing.goalId) {
+    if (goalIdData && goalIdData !== existing.goalId) {
       const lastGoalTask = await prisma.task.findFirst({
-        where: { goalId: data.goalId },
+        where: { goalId: goalIdData },
         orderBy: { goalSequenceNumber: "desc" },
         select: { goalSequenceNumber: true },
       });
@@ -57,12 +61,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const task = await prisma.task.update({
       where: { id },
       data: {
-        ...data,
-        goalSequenceNumber: goalSequenceNumber ?? (data.goalId === null ? null : undefined),
-        dueDate: data.dueDate !== undefined ? (data.dueDate ? new Date(data.dueDate) : null) : undefined,
-        scheduledStart: data.scheduledStart !== undefined ? (data.scheduledStart ? new Date(data.scheduledStart) : null) : undefined,
-        scheduledEnd: data.scheduledEnd !== undefined ? (data.scheduledEnd ? new Date(data.scheduledEnd) : null) : undefined,
-        recurrence: data.recurrence ?? undefined,
+        ...restData,
+        // Use relation objects instead of scalar FK fields
+        assignee: assigneeIdData !== undefined
+          ? (assigneeIdData ? { connect: { id: assigneeIdData } } : { disconnect: true })
+          : undefined,
+        goal: goalIdData !== undefined
+          ? (goalIdData ? { connect: { id: goalIdData } } : { disconnect: true })
+          : undefined,
+        goalSequenceNumber: goalSequenceNumber ?? (goalIdData === null ? null : undefined),
+        dueDate: restData.dueDate !== undefined ? (restData.dueDate ? new Date(restData.dueDate) : null) : undefined,
+        scheduledStart: restData.scheduledStart !== undefined ? (restData.scheduledStart ? new Date(restData.scheduledStart) : null) : undefined,
+        scheduledEnd: restData.scheduledEnd !== undefined ? (restData.scheduledEnd ? new Date(restData.scheduledEnd) : null) : undefined,
+        recurrence: restData.recurrence ?? undefined,
       },
       include: taskInclude,
     });
@@ -73,9 +84,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         data: { taskId: id, actorId: session.user.id, type: "STATUS_CHANGED", payload: { from: existing.status, to: data.status } },
       });
     }
-    if (data.assigneeId !== undefined && data.assigneeId !== existing.assigneeId) {
+    if (assigneeIdData !== undefined && assigneeIdData !== existing.assigneeId) {
       await prisma.taskActivity.create({
-        data: { taskId: id, actorId: session.user.id, type: "ASSIGNED", payload: { assigneeId: data.assigneeId } },
+        data: { taskId: id, actorId: session.user.id, type: "ASSIGNED", payload: { assigneeId: assigneeIdData } },
       });
     }
     if (data.priority && data.priority !== existing.priority) {
@@ -84,11 +95,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
     }
 
+    console.log(`[PATCH /api/tasks/${id}] saved dueDate:`, task.dueDate, "goalId:", task.goalId);
     return NextResponse.json(task);
   } catch (err) {
     if (err instanceof z.ZodError) return NextResponse.json({ error: err.issues }, { status: 400 });
-    console.error(err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("PATCH /api/tasks/[id] error:", err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

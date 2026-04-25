@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { BoardClient } from "./BoardClient";
+import { resetOverdueTasks } from "@/lib/resetOverdueTasks";
 
 interface Props {
   params: Promise<{ orgSlug: string; projectKey: string }>;
@@ -12,6 +13,8 @@ export default async function BoardPage({ params }: Props) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  await resetOverdueTasks(session.user.id);
+
   const org = await prisma.organization.findUnique({ where: { slug: orgSlug } });
   if (!org) notFound();
 
@@ -19,6 +22,11 @@ export default async function BoardPage({ params }: Props) {
     where: { organizationId: org.id, key: projectKey.toUpperCase() },
   });
   if (!project) notFound();
+
+  const members = await prisma.organizationMember.findMany({
+    where: { organizationId: org.id },
+    include: { user: { select: { id: true, name: true, image: true } } },
+  });
 
   const tasks = await prisma.task.findMany({
     where: { projectId: project.id },
@@ -31,6 +39,7 @@ export default async function BoardPage({ params }: Props) {
 
   return (
     <BoardClient
+      projectId={project.id}
       projectKey={project.key}
       tasks={tasks.map((t) => ({
         id: t.id,
@@ -39,12 +48,16 @@ export default async function BoardPage({ params }: Props) {
         title: t.title,
         status: t.status,
         priority: t.priority,
+        position: t.position,
         dueDate: t.dueDate ? t.dueDate.toISOString() : null,
         assignee: t.assignee ? { name: t.assignee.name } : null,
+        recurrence: t.recurrence,
         goal: t.goal
           ? { id: t.goal.id, title: t.goal.title, key: t.goal.key, position: t.goal.position }
           : null,
       }))}
+      members={members.map((m) => m.user)}
+      currentUserId={session.user.id!}
     />
   );
 }

@@ -39,7 +39,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
-        <p className="text-gray-500 mb-6 text-sm">Get started with TaskFlow for free</p>
+        <p className="text-gray-500 mb-6 text-sm">Get started with Bloom for free</p>
 
         <button
           onClick={() => signIn("google", { callbackUrl: "/onboarding" })}

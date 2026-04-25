@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     include: {
       assignee: { select: { id: true, name: true, image: true } },
       reporter: { select: { id: true, name: true, image: true } },
-      goal: { select: { key: true, position: true } },
+      goal: { select: { id: true, title: true, key: true, position: true } },
       _count: { select: { comments: true } },
     },
   });
@@ -103,6 +103,7 @@ export async function POST(req: Request) {
       include: {
         assignee: { select: { id: true, name: true, image: true } },
         reporter: { select: { id: true, name: true, image: true } },
+        goal: { select: { id: true, title: true, key: true, position: true } },
         _count: { select: { comments: true } },
       },
     });

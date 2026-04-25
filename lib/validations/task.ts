@@ -30,7 +30,11 @@ export const createTaskSchema = z.object({
 
 export const updateTaskSchema = createTaskSchema
   .omit({ projectId: true })
-  .extend({ position: z.number().optional() })
+  .extend({
+    position: z.number().optional(),
+    habitPosition: z.number().optional(),
+    assigneeText: z.string().nullable().optional(),
+  })
   .partial();
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

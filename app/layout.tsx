@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TaskFlow",
+  title: "Bloom",
   description: "Simple task management and scheduling for small teams",
 };
 

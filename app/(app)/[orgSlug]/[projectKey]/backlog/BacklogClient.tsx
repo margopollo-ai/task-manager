@@ -5,7 +5,7 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from "@/lib/hoo
 import { useGoals } from "@/lib/hooks/useGoals";
 import { useTaskPanel } from "@/lib/store";
 import { StatusBadge, PriorityBadge } from "@/components/tasks/TaskBadges";
-import { Plus, X, Pencil, Trash2, CalendarPlus } from "lucide-react";
+import { Plus, X, Pencil, Trash2, CalendarPlus, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 interface Member {
   id: string;
@@ -28,6 +28,7 @@ interface TaskRow {
   status: string;
   priority: string;
   assignee?: { id: string; name: string | null } | null;
+  assigneeText?: string | null;
   goal?: { key: string } | null;
   dueDate?: string | null;
   scheduledStart?: string | null;
@@ -38,6 +39,28 @@ interface TaskRow {
 const STATUS_OPTIONS = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"];
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 
+const STATUS_ORDER: Record<string, number> = { TODO: 0, IN_PROGRESS: 1, IN_REVIEW: 2, DONE: 3, CANCELLED: 4 };
+const PRIORITY_ORDER: Record<string, number> = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+
+type SortKey = "id" | "title" | "status" | "priority" | "assignee" | "dueDate" | "schedule";
+type SortDir = "asc" | "desc";
+
+function sortTasks(tasks: TaskRow[], key: SortKey, dir: SortDir): TaskRow[] {
+  return [...tasks].sort((a, b) => {
+    let cmp = 0;
+    switch (key) {
+      case "id":        cmp = a.sequenceNumber - b.sequenceNumber; break;
+      case "title":     cmp = a.title.localeCompare(b.title); break;
+      case "status":    cmp = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99); break;
+      case "priority":  cmp = (PRIORITY_ORDER[a.priority] ?? 99) - (PRIORITY_ORDER[b.priority] ?? 99); break;
+      case "assignee":  cmp = (a.assignee?.name ?? "").localeCompare(b.assignee?.name ?? ""); break;
+      case "dueDate":   cmp = (a.dueDate ?? "").localeCompare(b.dueDate ?? ""); break;
+      case "schedule":  cmp = (a.scheduledStart ?? "").localeCompare(b.scheduledStart ?? ""); break;
+    }
+    return dir === "asc" ? cmp : -cmp;
+  });
+}
+
 const STATUS_LABELS: Record<string, string> = {
   TODO: "To Do", IN_PROGRESS: "In Progress", IN_REVIEW: "Follow Up", DONE: "Done", CANCELLED: "Cancelled",
 };
@@ -47,12 +70,20 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
   const [priorityFilter, setPriorityFilter] = useState("");
   const [assigneeFilter, setAssigneeFilter] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  function handleSort(key: SortKey) {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("asc"); }
+  }
 
   const filters = Object.fromEntries(
     Object.entries({ status: statusFilter, priority: priorityFilter, assigneeId: assigneeFilter }).filter(([, v]) => v)
   );
 
-  const { data: tasks = [], isLoading } = useTasks(projectId, filters);
+  const { data: rawTasks = [], isLoading } = useTasks(projectId, filters);
+  const tasks = sortKey ? sortTasks(rawTasks as TaskRow[], sortKey, sortDir) : rawTasks;
   const { open } = useTaskPanel();
   const updateTask = useUpdateTask(projectId);
   const deleteTask = useDeleteTask(projectId);
@@ -109,13 +140,12 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs text-[#5f6368] font-medium border-b border-[#f1f3f4] bg-[#f1f3f4]">
-              <th className="text-left px-4 py-2.5 w-24">ID</th>
-              <th className="text-left px-4 py-2.5">Title</th>
-              <th className="text-left px-4 py-2.5 w-32">Status</th>
-              <th className="text-left px-4 py-2.5 w-28">Priority</th>
-              <th className="text-left px-4 py-2.5 w-32">Assignee</th>
-              <th className="text-left px-4 py-2.5 w-28">Due date</th>
-              <th className="text-left px-4 py-2.5 w-44">Schedule</th>
+              <SortTh label="ID"       col="id"       sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-24" />
+              <SortTh label="Title"    col="title"    sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+              <SortTh label="Status"   col="status"   sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-32" />
+              <SortTh label="Priority" col="priority" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-28" />
+              <SortTh label="Assignee" col="assignee" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-32" />
+              <SortTh label="Due date" col="dueDate"  sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-28" />
               <th className="w-10" />
             </tr>
           </thead>
@@ -123,7 +153,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
             {isLoading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="border-b border-[#f1f3f4]">
-                  {[...Array(8)].map((_, j) => (
+                  {[...Array(7)].map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="h-3 bg-gray-100 animate-pulse rounded" />
                     </td>
@@ -132,7 +162,7 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
               ))
             ) : tasks.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-[#5f6368] text-sm">
+                <td colSpan={7} className="text-center py-12 text-[#5f6368] text-sm">
                   No tasks found. Create your first task above.
                 </td>
               </tr>
@@ -174,8 +204,9 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
                   <td className="px-4 py-2">
                     <InlineAssignee
                       assignee={task.assignee ?? null}
+                      assigneeText={task.assigneeText ?? null}
                       members={members}
-                      onChange={(id) => save(task.id, { assigneeId: id || null })}
+                      onChange={(id, text) => save(task.id, { assigneeId: id || null, assigneeText: text || null })}
                     />
                   </td>
 
@@ -183,16 +214,6 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
                     <InlineDate
                       value={task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-CA", { timeZone: "UTC" }) : ""}
                       onSave={(v) => save(task.id, { dueDate: v ? new Date(v + "T12:00:00").toISOString() : null })}
-                    />
-                  </td>
-
-                  <td className="px-4 py-2">
-                    <InlineSchedule
-                      scheduledStart={task.scheduledStart ?? null}
-                      scheduledEnd={task.scheduledEnd ?? null}
-                      recurrence={task.recurrence ?? "NONE"}
-                      title={task.title}
-                      onSave={(data) => save(task.id, data)}
                     />
                   </td>
 
@@ -227,6 +248,27 @@ export function BacklogClient({ projectId, projectKey, members, currentUserId }:
         <p className="text-xs text-[#5f6368]">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</p>
       )}
     </div>
+  );
+}
+
+// ── Sortable header cell ────────────────────────────────────────────────────
+
+function SortTh({ label, col, sortKey, sortDir, onSort, className }: {
+  label: string; col: SortKey; sortKey: SortKey | null; sortDir: SortDir;
+  onSort: (k: SortKey) => void; className?: string;
+}) {
+  const active = sortKey === col;
+  const Icon = active ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
+  return (
+    <th
+      className={`text-left px-4 py-2.5 cursor-pointer select-none hover:bg-[#e8eaed] transition ${className ?? ""}`}
+      onClick={() => onSort(col)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        <Icon className={`w-3 h-3 ${active ? "text-[#1a73e8]" : "text-gray-300"}`} />
+      </span>
+    </th>
   );
 }
 
@@ -300,81 +342,56 @@ function InlineSelect({ value, options, onChange, renderDisplay }: {
   );
 }
 
-function InlineAssignee({ assignee, members, onChange }: {
+function InlineAssignee({ assignee, assigneeText, members, onChange }: {
   assignee: { id: string; name: string | null } | null;
+  assigneeText: string | null;
   members: Member[];
-  onChange: (id: string) => void;
+  onChange: (id: string, text: string) => void;
 }) {
+  const displayName = assigneeText || assignee?.name || null;
   const [editing, setEditing] = useState(false);
   const [query, setQuery] = useState("");
+  const listId = "assignee-members";
 
-  const filtered = query.trim()
-    ? members.filter((m) => m.name?.toLowerCase().includes(query.toLowerCase()))
-    : members;
-
-  function select(id: string) {
-    onChange(id);
+  function commit(value: string) {
+    const trimmed = value.trim();
     setEditing(false);
     setQuery("");
-  }
-
-  function commit() {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      select("");
-    } else {
-      const match = filtered[0];
-      select(match ? match.id : (assignee?.id ?? ""));
-    }
+    if (!trimmed) { onChange("", ""); return; }
+    const match = members.find((m) => m.name?.toLowerCase() === trimmed.toLowerCase());
+    if (match) onChange(match.id, "");       // known member → use assigneeId, clear text
+    else onChange("", trimmed);              // unknown name → store as free text
   }
 
   if (editing) {
     return (
-      <div className="relative">
+      <>
+        <datalist id={listId}>
+          {members.map((m) => <option key={m.id} value={m.name ?? ""} />)}
+        </datalist>
         <input
           autoFocus
+          list={listId}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onBlur={commit}
+          onBlur={(e) => commit(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") { e.preventDefault(); commit(); }
+            if (e.key === "Enter") { e.preventDefault(); commit(query); }
             if (e.key === "Escape") { setEditing(false); setQuery(""); }
           }}
-          placeholder="Search name…"
-          className="w-32 border border-[#1a73e8] rounded px-2 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
+          placeholder="Type any name…"
+          className="w-36 border border-[#1a73e8] rounded px-2 py-0.5 text-xs text-[#202124] focus:outline-none focus:ring-1 focus:ring-[#1a73e8]"
         />
-        {filtered.length > 0 && (
-          <ul className="absolute z-50 top-full left-0 mt-1 w-40 bg-white border border-[#dadce0] rounded-lg shadow-lg overflow-hidden text-xs">
-            <li>
-              <button
-                onMouseDown={(e) => { e.preventDefault(); select(""); }}
-                className="w-full text-left px-3 py-1.5 text-[#5f6368] hover:bg-[#f1f3f4]"
-              >
-                Unassigned
-              </button>
-            </li>
-            {filtered.map((m) => (
-              <li key={m.id}>
-                <button
-                  onMouseDown={(e) => { e.preventDefault(); select(m.id); }}
-                  className="w-full text-left px-3 py-1.5 text-gray-700 hover:bg-[#e8f0fe]"
-                >
-                  {m.name ?? m.id}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      </>
     );
   }
 
   return (
     <span
-      onClick={() => setEditing(true)}
+      onClick={() => { setQuery(displayName ?? ""); setEditing(true); }}
       className="block cursor-pointer text-xs text-[#5f6368] rounded px-2 py-0.5 hover:bg-[#f1f3f4] transition"
     >
-      {assignee?.name ?? <span className="text-gray-300">—</span>}
+      {displayName ?? <span className="text-gray-300">—</span>}
     </span>
   );
 }
@@ -519,6 +536,7 @@ function CreateTaskForm({ projectId, members, currentUserId, onClose }: {
   const [priority, setPriority] = useState("MEDIUM");
   const [assigneeId, setAssigneeId] = useState(currentUserId);
   const [dueDate, setDueDate] = useState("");
+  const [isDaily, setIsDaily] = useState(false);
   const createTask = useCreateTask();
   const { data: goals } = useGoals();
 
@@ -533,7 +551,8 @@ function CreateTaskForm({ projectId, members, currentUserId, onClose }: {
         type: "TASK" as const,
         goalId: goalId || null,
         assigneeId: assigneeId || null,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        dueDate: dueDate ? new Date(dueDate + "T12:00:00").toISOString() : null,
+        recurrence: isDaily ? "DAILY" : "NONE",
         labels: [],
       },
       { onSuccess: onClose }
@@ -544,7 +563,7 @@ function CreateTaskForm({ projectId, members, currentUserId, onClose }: {
     <form onSubmit={handleSubmit} className="bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-4 space-y-3">
       <input autoFocus required placeholder="Task title…" value={title} onChange={(e) => setTitle(e.target.value)}
         className="w-full border border-[#dadce0] rounded-lg px-3 py-2 text-sm text-[#202124] placeholder:text-[#5f6368] focus:outline-none focus:ring-2 focus:ring-[#1a73e8]" />
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap items-center">
         <select value={goalId} onChange={(e) => setGoalId(e.target.value)}
           className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]">
           <option value="">No goal</option>
@@ -561,6 +580,11 @@ function CreateTaskForm({ projectId, members, currentUserId, onClose }: {
         </select>
         <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
           className="text-xs text-[#202124] border border-[#dadce0] rounded-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1a73e8]" />
+        <label className="flex items-center gap-2 text-xs text-[#5f6368] cursor-pointer">
+          <input type="checkbox" checked={isDaily} onChange={(e) => setIsDaily(e.target.checked)}
+            className="w-4 h-4 rounded border border-[#dadce0] cursor-pointer accent-[#1a73e8]" />
+          Daily
+        </label>
       </div>
       <div className="flex gap-2">
         <button type="submit" disabled={createTask.isPending}

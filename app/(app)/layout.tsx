@@ -7,7 +7,7 @@ import { TaskDetailPanel } from "@/components/tasks/TaskDetailPanel";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
 
   const memberships = await prisma.organizationMember.findMany({
     where: { userId: session.user.id },

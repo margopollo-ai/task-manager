@@ -23,12 +23,18 @@ export function useTask(id: string) {
 export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateTaskInput) =>
-      fetch("/api/tasks", {
+    mutationFn: async (data: CreateTaskInput) => {
+      const r = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body?.error ? JSON.stringify(body.error) : `HTTP ${r.status}`);
+      }
+      return r.json();
+    },
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", task.projectId] });
     },
@@ -38,12 +44,18 @@ export function useCreateTask() {
 export function useUpdateTask(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) =>
-      fetch(`/api/tasks/${id}`, {
+    mutationFn: async ({ id, data }: { id: string; data: UpdateTaskInput }) => {
+      const r = await fetch(`/api/tasks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body?.error ? JSON.stringify(body.error) : `HTTP ${r.status}`);
+      }
+      return r.json();
+    },
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ["tasks", projectId] });
       await queryClient.cancelQueries({ queryKey: ["task", id] });
@@ -64,6 +76,7 @@ export function useUpdateTask(projectId: string) {
     onSettled: (_data, _err, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       queryClient.invalidateQueries({ queryKey: ["task", id] });
+      queryClient.invalidateQueries({ queryKey: ["goal"] });
     },
   });
 }

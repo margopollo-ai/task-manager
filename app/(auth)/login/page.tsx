@@ -35,7 +35,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h1>
-        <p className="text-gray-500 mb-6 text-sm">Sign in to your TaskFlow account</p>
+        <p className="text-gray-500 mb-6 text-sm">Sign in to your Bloom account</p>
 
         <button
           onClick={() => signIn("google", { callbackUrl: "/dashboard" })}

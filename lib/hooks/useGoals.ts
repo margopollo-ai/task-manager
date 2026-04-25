@@ -8,7 +8,9 @@ export interface Goal {
   description?: string | null;
   key: string;
   position: number;
+  completedAt: string | null;
   _count: { tasks: number };
+  doneTaskCount: number;
 }
 
 export interface GoalTask {
@@ -35,7 +37,7 @@ export function useGoals() {
 
 export function useGoal(id: string, enabled: boolean) {
   return useQuery<GoalDetail>({
-    queryKey: ["goal", id],
+    queryKey: ["goal", id, enabled],
     queryFn: () => fetch(`/api/goals/${id}`).then((r) => r.json()),
     enabled,
   });
@@ -57,13 +59,18 @@ export function useCreateGoal() {
 export function useUpdateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; key?: string } }) =>
-      fetch(`/api/goals/${id}`, {
+    mutationFn: async ({ id, data }: { id: string; data: { title?: string; description?: string; key?: string; completedAt?: string | null } }) => {
+      const r = await fetch(`/api/goals/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json?.error ?? `HTTP ${r.status}`);
+      return json;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["goals"] }),
+    onError: (err) => console.error("[useUpdateGoal]", err),
   });
 }
 

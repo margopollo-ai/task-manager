@@ -8,6 +8,7 @@ const updateGoalSchema = z.object({
   description: z.string().optional(),
   key: z.string().min(1).max(10).optional(),
   position: z.number().optional(),
+  completedAt: z.string().datetime().nullable().optional(),
 });
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +24,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           assignee: { select: { id: true, name: true, image: true } },
           project: { include: { organization: { select: { slug: true } } } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { position: "asc" },
       },
       _count: { select: { tasks: true } },
     },
@@ -43,17 +44,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     const data = updateGoalSchema.parse(body);
 
+    const { completedAt, ...rest } = data;
     const goal = await prisma.goal.update({
       where: { id, userId: session.user.id },
-      data,
+      data: {
+        ...rest,
+        ...(completedAt !== undefined && { completedAt: completedAt ? new Date(completedAt) : null }),
+      },
       include: { _count: { select: { tasks: true } } },
     });
 
     return NextResponse.json(goal);
   } catch (err) {
     if (err instanceof z.ZodError) return NextResponse.json({ error: err.issues }, { status: 400 });
-    console.error(err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[PATCH /api/goals]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
