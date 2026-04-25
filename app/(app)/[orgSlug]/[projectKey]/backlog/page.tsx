@@ -35,7 +35,7 @@ export default async function BacklogPage({ params }: Props) {
     select: { id: true },
   });
   await prisma.task.updateMany({
-    where: { projectId: { in: allProjects.map((p) => p.id) }, assigneeId: null },
+    where: { projectId: { in: allProjects.map((p: { id: string }) => p.id) }, assigneeId: null },
     data: { assigneeId: session.user.id },
   });
 
