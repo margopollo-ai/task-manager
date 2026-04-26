@@ -11,6 +11,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Bloom",
   description: "Simple task management and scheduling for small teams",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Bloom",
+  },
 };
 
 export default function RootLayout({
@@ -20,6 +26,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" href="/bloom.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Bloom" />
+        <meta name="theme-color" content="#ffffff" />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
