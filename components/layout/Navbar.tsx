@@ -50,14 +50,13 @@ export function Navbar({ user, projects = [] }: NavbarProps) {
   return (
     <header className="bg-white shrink-0" style={{ borderBottom: "1px solid var(--gc-border)" }}>
       {/* Top row: logo + user menu */}
-      <div className="h-14 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between px-4">
+        <div className="flex-1" />
+        <div className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/bloom-icon.png" alt="Bloom" width={32} height={32} className="rounded-md" />
-          <span className="text-lg font-semibold tracking-tight" style={{ color: "var(--gc-text)", fontFamily: "var(--font-sans)" }}>
-            Bloom
-          </span>
+          <img src="/bloom_transparent.png" alt="Bloom" height={192} className="h-48 w-auto" style={{ backgroundColor: "white", margin: "-20px 0" }} />
         </div>
+        <div className="flex-1" />
 
         <div className="relative">
           <button
@@ -103,7 +102,7 @@ export function Navbar({ user, projects = [] }: NavbarProps) {
       </div>
 
       {/* Bottom row: nav links */}
-      <nav className="flex items-center gap-1 px-3 pb-2 overflow-x-auto">
+      <nav className="flex items-center justify-center gap-1 px-3 pb-2 overflow-x-auto">
         <NavLink href="/today" label="Today" />
         <NavLink href="/goals" label="Goals" />
         {projects.map((p) => (
