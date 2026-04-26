@@ -34,7 +34,7 @@ export function HabitsClient({ tasks, members, currentUserId }: Props) {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
-        <Target className="w-6 h-6 text-[#c4688a]" />
+        <Target className="w-6 h-6 text-green-600" />
         <h1 className="text-2xl font-bold text-[#202124]">Habits</h1>
       </div>
 

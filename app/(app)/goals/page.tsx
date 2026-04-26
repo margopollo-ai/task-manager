@@ -330,7 +330,7 @@ function SortableGoalItem({ goal, isExpanded, onToggle, isEditing, editTitle, ed
                 value={editKey}
                 onChange={(e) => onEditKeyChange(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
                 placeholder="e.g. MAR"
-                className="w-24 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-mono text-[#a85272] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-24 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-mono text-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <span className="text-xs text-gray-400">Used as task ID prefix (e.g. MAR-1)</span>
             </div>
@@ -368,8 +368,8 @@ function SortableGoalItem({ goal, isExpanded, onToggle, isEditing, editTitle, ed
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="font-extrabold text-[#c4688a] text-lg">{goal.title}</p>
-                <span className="text-xs font-mono bg-[#fdf2f5] text-[#c4688a] border border-[#f0c4cf] px-1.5 py-0.5 rounded shrink-0">{goal.key}</span>
+                <p className="font-extrabold text-green-600 text-lg">{goal.title}</p>
+                <span className="text-xs font-mono bg-green-50 text-green-600 border border-green-200 px-1.5 py-0.5 rounded shrink-0">{goal.key}</span>
               </div>
               {goal.description && (
                 <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{goal.description}</p>

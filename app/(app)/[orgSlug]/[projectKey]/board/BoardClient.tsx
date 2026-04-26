@@ -261,9 +261,9 @@ export function BoardClient({ projectId, projectKey, tasks: initialTasks, member
             {sections.map((section) => (
               <div key={section.id}>
                 <div className="flex items-center gap-2 mb-3">
-                  <h2 className={`font-extrabold text-lg ${section.completed ? "text-gray-400 line-through" : "text-[#c4688a]"}`}>{section.title}</h2>
+                  <h2 className={`font-extrabold text-lg ${section.completed ? "text-gray-400 line-through" : "text-green-600"}`}>{section.title}</h2>
                   {section.goalKey && (
-                    <span className={`text-xs font-mono px-1.5 py-0.5 rounded border ${section.completed ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-[#fdf2f5] text-[#c4688a] border-[#f0c4cf]"}`}>
+                    <span className={`text-xs font-mono px-1.5 py-0.5 rounded border ${section.completed ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-green-50 text-green-600 border-green-200"}`}>
                       {section.goalKey}
                     </span>
                   )}
